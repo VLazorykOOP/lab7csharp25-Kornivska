@@ -1,68 +1,105 @@
-﻿
-namespace Lab7CSharp
+﻿using System;
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace MirrorImageApp
 {
-    partial class Form1
+    public partial class Form1 : Form
     {
-        /// <summary>
-        /// Обязательная переменная конструктора.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+        private PictureBox pictureBox;
+        private Button btnLoad, btnMirror, btnSave;
+        private Bitmap currentImage;
 
-        /// <summary>
-        /// Освободить все используемые ресурсы.
-        /// </summary>
-        /// <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
-        protected override void Dispose(bool disposing)
+        public Form1()
         {
-            if (disposing && (components != null))
+            InitializeComponent();
+            InitializeCustomComponents();
+        }
+
+        private void InitializeCustomComponents()
+        {
+            this.Text = "Дзеркальне зображення";
+            this.Size = new Size(800, 600);
+
+            pictureBox = new PictureBox
             {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
+                SizeMode = PictureBoxSizeMode.Zoom,
+                Location = new Point(10, 10),
+                Size = new Size(760, 460),
+                BorderStyle = BorderStyle.FixedSingle
+            };
+            this.Controls.Add(pictureBox);
+
+            btnLoad = new Button
+            {
+                Text = "Завантажити",
+                Location = new Point(10, 480)
+            };
+            btnLoad.Click += BtnLoad_Click;
+            this.Controls.Add(btnLoad);
+
+            btnMirror = new Button
+            {
+                Text = "Здзеркалити",
+                Location = new Point(130, 480)
+            };
+            btnMirror.Click += BtnMirror_Click;
+            this.Controls.Add(btnMirror);
+
+            btnSave = new Button
+            {
+                Text = "Зберегти",
+                Location = new Point(250, 480)
+            };
+            btnSave.Click += BtnSave_Click;
+            this.Controls.Add(btnSave);
         }
 
-        #region Код, автоматически созданный конструктором форм Windows
-
-        /// <summary>
-        /// Требуемый метод для поддержки конструктора — не изменяйте 
-        /// содержимое этого метода с помощью редактора кода.
-        /// </summary>
-        private void InitializeComponent()
+        private void BtnLoad_Click(object sender, EventArgs e)
         {
-            this.label1 = new System.Windows.Forms.Label();
-            this.SuspendLayout();
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.BackColor = System.Drawing.Color.PaleGreen;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.World, ((byte)(204)));
-            this.label1.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.label1.Location = new System.Drawing.Point(376, -1);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(95, 18);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Lab 7.   C# ";
-            this.label1.Click += new System.EventHandler(this.label1_Click);
-            // 
-            // Form1
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1067, 386);
-            this.Controls.Add(this.label1);
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.Name = "Form1";
-            this.Text = "Form1";
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            using OpenFileDialog ofd = new OpenFileDialog
+            {
+                Filter = "Зображення (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg"
+            };
 
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                currentImage = new Bitmap(ofd.FileName);
+                pictureBox.Image = currentImage;
+            }
         }
 
-        #endregion
+        private void BtnMirror_Click(object sender, EventArgs e)
+        {
+            if (currentImage == null) return;
 
-        private System.Windows.Forms.Label label1;
+            Bitmap mirrored = new Bitmap(currentImage.Width, currentImage.Height);
+            for (int y = 0; y < currentImage.Height; y++)
+            {
+                for (int x = 0; x < currentImage.Width; x++)
+                {
+                    Color pixel = currentImage.GetPixel(x, y);
+                    mirrored.SetPixel(currentImage.Width - x - 1, y, pixel);
+                }
+            }
+
+            currentImage = mirrored;
+            pictureBox.Image = mirrored;
+        }
+
+        private void BtnSave_Click(object sender, EventArgs e)
+        {
+            if (currentImage == null) return;
+
+            using SaveFileDialog sfd = new SaveFileDialog
+            {
+                Filter = "PNG файл (*.png)|*.png"
+            };
+
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                currentImage.Save(sfd.FileName, System.Drawing.Imaging.ImageFormat.Png);
+            }
+        }
     }
 }
-
